@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeleteResult } from 'typeorm';
 
 @Injectable()
 export class UsersService {
@@ -49,11 +49,21 @@ export class UsersService {
       })
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, createUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: id } });
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    user.name = createUserDto.name;
+    return await this.userRepository.save(user);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number): Promise<DeleteResult> {
+    const user = await this.userRepository.findOne({ where: { id: id } });
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return await this.userRepository.delete(user);
   }
 }
